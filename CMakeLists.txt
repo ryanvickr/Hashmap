@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
 project(HashMap)
 
-# add_library(wasm-manager "")
-# add_subdirectory("manager")
+# Add the src directory library to the build
+add_library(source INTERFACE "")
+add_subdirectory("src")
+# Build executable
 add_executable(${PROJECT_NAME} main.cc)
-
-# target_link_libraries(${PROJECT_NAME} wasm-manager abseil::abseil)
+# Link in libraries.
+target_link_libraries(${PROJECT_NAME} source)
