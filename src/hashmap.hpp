@@ -4,7 +4,6 @@
 #include <iostream>
 #include <functional>
 #include <utility>
-#include <unordered_map>
 
 namespace {
 void LOG(std::string_view message) {
