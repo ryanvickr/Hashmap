@@ -9,7 +9,7 @@ namespace {
 void LOG(std::string_view message) {
    std::cout << "[Info] " << message << std::endl;
 }
-}
+}  // namespace
 
 template<typename K, typename V>
 class HashMap {
@@ -17,9 +17,9 @@ class HashMap {
    HashMap(int initial_size, std::function<int(const K&)> hash_function);
 
    // Inserts a value into the hashmap.
-   void Insert(K key, V value);
+   void Insert(const K& key, const V& value);
    // Removes a value from the hashmap.
-   void Remove(K& key);
+   void Remove(const K& key);
    // Gets the value associated with the key, or returns
    // a null pointer.
    V* Get(const K& key);
@@ -44,7 +44,7 @@ HashMap<K, V>::HashMap(
    : data_(initial_size), hash_function_(hash_function) {}
 
 template<typename K, typename V>
-void HashMap<K, V>::Insert(K key, V value) {
+void HashMap<K, V>::Insert(const K& key, const V& value) {
    int index = hash_function_(key);
    // TODO: Validate that this index is within bounds first.
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
