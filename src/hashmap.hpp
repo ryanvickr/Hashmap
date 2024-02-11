@@ -56,6 +56,9 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
       // Increment the count of num_items_.
       num_items_++;
       return;
+   } else if (pair->first == key) {
+      // Replace an existing value.
+      pair->second = value;
    }
 
    // TODO: deal with collisions
