@@ -25,7 +25,7 @@ class HashMap {
    V* Get(const K& key);
    // Returns `true` if the key was found in the map, or 
    // false otherwise.
-   bool Contains(K& key);
+   bool Contains(const K& key);
    // Returns the size of the hashmap.
    int Size() const;
 
@@ -90,6 +90,14 @@ V* HashMap<K, V>::Get(const K& key) {
    } else {
       return &pair->second;
    }
+}
+
+template<typename K, typename V>
+bool HashMap<K, V>::Contains(const K& key) {
+   int index = hash_function_(key);
+   // TODO: Validate that this index is within bounds first.
+   std::unique_ptr<std::pair<K, V>>& pair = data_[index];
+   return pair != nullptr;
 }
 
 template<typename K, typename V>

@@ -26,7 +26,7 @@ int main() {
 
     // Try and remove a value.
     map->Remove(1);
-    if (map->Get(1) != nullptr) {
+    if (map->Contains(1)) {
         std::cerr << "Failed to remove object." << std::endl;
         return 1;
     } else {
