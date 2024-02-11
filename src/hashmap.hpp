@@ -26,7 +26,7 @@ class HashMap {
    // false otherwise.
    bool Contains(K& key);
    // Returns the size of the hashmap.
-   int Size();
+   int Size() const;
 
  private:
    // The underlying array.
@@ -34,7 +34,7 @@ class HashMap {
    // Hash function
    std::function<int(const K&)> hash_function_;
 
-   int items = 0;
+   int num_items_ = 0;
 };
 
 template<typename K, typename V>
@@ -52,6 +52,8 @@ void HashMap<K, V>::Insert(K key, V value) {
    if (pair == nullptr) {
       // No collision, safe to insert.
       pair = std::make_unique<std::pair<K, V>>(key, value);
+      // Increment the count of num_items_.
+      num_items_++;
       return;
    }
 
@@ -78,6 +80,11 @@ V* HashMap<K, V>::Get(const K& key) {
    } else {
       return &pair->second;
    }
+}
+
+template<typename K, typename V>
+int HashMap<K, V>::Size() const {
+   return num_items_;
 }
 
 #endif  // HASHMAP_H
