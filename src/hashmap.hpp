@@ -51,8 +51,7 @@ void HashMap<K, V>::Insert(K key, V value) {
    // Check for a collision
    if (pair == nullptr) {
       // No collision, safe to insert.
-      pair->first = key;
-      pair->second = value;
+      pair = std::make_unique<std::pair<K, V>>(key, value);
       return;
    }
 
@@ -68,11 +67,13 @@ V* HashMap<K, V>::Get(const K& key) {
    // If this key is empty, return nullptr.
    // TODO: Add an overload that allows a default value to be passed in.
    if (pair == nullptr) {
+      LOG("Couldn't find key");
       return nullptr;
    }
 
    if (pair->first != key) {
       // We don't have a direct match, linear search.
+      LOG("Coudlnt' find match.");
       return nullptr;
    } else {
       return &pair->second;
