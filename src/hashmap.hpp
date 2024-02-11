@@ -18,7 +18,7 @@ class HashMap {
 
    // Inserts a value into the hashmap.
    void Insert(const K& key, const V& value);
-   // Removes a value from the hashmap.
+   // Removes a value from the hashmap and returns it.
    void Remove(const K& key);
    // Gets the value associated with the key, or returns
    // a null pointer.
@@ -59,6 +59,15 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
    }
 
    // TODO: deal with collisions
+}
+
+template<typename K, typename V>
+void HashMap<K, V>::Remove(const K& key) {
+   int index = hash_function_(key);
+   // TODO: Validate that this index is within bounds first.
+   std::unique_ptr<std::pair<K, V>>& pair = data_[index];
+
+   pair = nullptr;
 }
 
 template<typename K, typename V>
