@@ -64,15 +64,51 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
    if (pair == nullptr) {
       // No collision, safe to insert.
       pair = std::make_unique<std::pair<K, V>>(key, value);
-      // Increment the count of num_items_.
       num_items_++;
       return;
    } else if (pair->first == key) {
-      // Replace an existing value.
+      // No collision, replace the existing value.
       pair->second = value;
    }
 
-   // TODO: deal with collisions
+   // Deal with collisions.
+   if ((num_items_ / (double)data_.size()) >= 0.7) {
+      // If we're at or above 70% capacity, we need to rehash.
+      
+      // TODO: Implement the rehash function.
+      // Rehash();
+      // Insert(key, value);
+   } else {
+      // Perform a linear search for the next available slot.
+      for (int i = index + 1; i < data_.size(); i++) {
+         // Check to see whether the slot is empty.
+         std::unique_ptr<std::pair<K, V>>& pair = data_[i];
+         if (pair == nullptr) {
+            // Found an empty slot.
+            pair = std::make_unique<std::pair<K, V>>(key, value);
+            num_items_++;
+            return;
+         }
+      }
+
+      // We've reached the end and not found an empty slot.
+      // Try searching from the front.
+      for (int i = 0; i < index; i++) {
+         // Check to see whether the slot is empty.
+         std::unique_ptr<std::pair<K, V>>& pair = data_[i];
+         if (pair == nullptr) {
+            // Found an empty slot.
+            pair = std::make_unique<std::pair<K, V>>(key, value);
+            num_items_++;
+            return;
+         }
+      }
+
+      // This shouldn't be possible, since a rehash should occur
+      // before all slots are filled.
+      // Rehash();
+      // Insert(key, value);
+   }
 }
 
 template<typename K, typename V>
@@ -80,6 +116,7 @@ void HashMap<K, V>::Remove(const K& key) {
    int index = GetIndex(key);
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
 
+   // TODO: Check for a collision in this, Get, and Contains
    if (pair != nullptr) {
       pair = nullptr;
       num_items_--;
