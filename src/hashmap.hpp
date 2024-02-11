@@ -4,6 +4,7 @@
 #include <iostream>
 #include <functional>
 #include <utility>
+#include <unordered_map>
 
 namespace {
 void LOG(std::string_view message) {
@@ -14,6 +15,7 @@ void LOG(std::string_view message) {
 template<typename K, typename V>
 class HashMap {
  public:
+   HashMap(int initial_size);
    HashMap(int initial_size, std::function<int(const K&)> hash_function);
 
    // Inserts a value into the hashmap.
@@ -30,10 +32,17 @@ class HashMap {
    int Size() const;
 
  private:
+   int GetIndex(const K& key);
+
+   // Resizes and rehashes the underlying array.
+   void Rehash();
+
    // The underlying array.
    std::vector<std::unique_ptr<std::pair<K, V>>> data_;
-   // Hash function
+   // User-specified hash function
    std::function<int(const K&)> hash_function_;
+   // Default hash function
+   std::hash<K> hasher_;
 
    int num_items_ = 0;
 };
@@ -44,8 +53,11 @@ HashMap<K, V>::HashMap(
    : data_(initial_size), hash_function_(hash_function) {}
 
 template<typename K, typename V>
+HashMap<K, V>::HashMap(int initial_size): data_(initial_size) {}
+
+template<typename K, typename V>
 void HashMap<K, V>::Insert(const K& key, const V& value) {
-   int index = hash_function_(key);
+   int index = GetIndex(key);
    // TODO: Validate that this index is within bounds first.
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
 
@@ -66,7 +78,7 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
 
 template<typename K, typename V>
 void HashMap<K, V>::Remove(const K& key) {
-   int index = hash_function_(key);
+   int index = GetIndex(key);
    // TODO: Validate that this index is within bounds first.
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
 
@@ -78,7 +90,7 @@ void HashMap<K, V>::Remove(const K& key) {
 
 template<typename K, typename V>
 V* HashMap<K, V>::Get(const K& key) {
-   int index = hash_function_(key);
+   int index = GetIndex(key);
    // TODO: Validate that this index is within bounds first.
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
 
@@ -100,7 +112,7 @@ V* HashMap<K, V>::Get(const K& key) {
 
 template<typename K, typename V>
 bool HashMap<K, V>::Contains(const K& key) {
-   int index = hash_function_(key);
+   int index = GetIndex(key);
    // TODO: Validate that this index is within bounds first.
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
    return pair != nullptr;
@@ -109,6 +121,20 @@ bool HashMap<K, V>::Contains(const K& key) {
 template<typename K, typename V>
 int HashMap<K, V>::Size() const {
    return num_items_;
+}
+
+template<typename K, typename V>
+int HashMap<K, V>::GetIndex(const K& key) {
+   if (hash_function_) {
+      return hash_function_(key);
+   }
+   uint64_t hash = hasher_(key);
+   std::string msg = "Hashcode=" + std::to_string(hash);
+   LOG(msg);
+   int index = hash % data_.size();
+   msg = "Adjusted index=" + std::to_string(index);
+   LOG(msg);
+   return index;
 }
 
 #endif  // HASHMAP_H
