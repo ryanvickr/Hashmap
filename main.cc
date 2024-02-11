@@ -3,20 +3,16 @@
 
 #include "src/hashmap.hpp"
 
+const int kTestKey = 11;
+
 int main() {
-    std::cout << "Hello" << std::endl;
-
-    std::function<int(const int&)> hash_func = [](const int& key) {
-        return 1;
-    };
-
-    auto map = std::make_unique<HashMap<int, int>>(10, hash_func);
+    auto map = std::make_unique<HashMap<int, int>>(10);
 
     // Try and insert a value.
-    map->Insert(1, 3);
+    map->Insert(kTestKey, 3);
 
     // Try and get the same value.
-    auto* result = map->Get(1);
+    auto* result = map->Get(kTestKey);
     if (result == nullptr) {
         std::cerr << "fail." << std::endl;
         return 1;
@@ -25,8 +21,8 @@ int main() {
     }
 
     // Try and remove a value.
-    map->Remove(1);
-    if (map->Contains(1)) {
+    map->Remove(kTestKey);
+    if (map->Contains(kTestKey)) {
         std::cerr << "Failed to remove object." << std::endl;
         return 1;
     } else {
