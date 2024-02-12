@@ -1,14 +1,19 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#include <iostream>
 #include <functional>
+#include <iostream>
 #include <utility>
 
 namespace {
-void LOG(std::string_view message) {
-   std::cout << "[Info] " << message << std::endl;
-}
+
+#define LOG(msg) \
+    std::cout << __FILE__ << "(" << __LINE__ << ") INFO: " \
+      << msg << std::endl;
+#define LOG_ERR(msg) \
+    std::cerr << __FILE__ << "(" << __LINE__ << ") ERROR: " \
+      << msg << std::endl;
+
 }  // namespace
 
 template<typename K, typename V>
@@ -31,7 +36,18 @@ class HashMap {
    int Size() const;
 
  private:
+   // Helper function to get the hashed index of the specified key.
    int GetIndex(const K& key);
+
+   // Helper function to find the next free slot by performing a
+   // linear search in the underlying `data_` array. Used when a
+   // collision occurs. Returns -1 if full.
+   int GetNextAvailIndex(int start_index);
+
+   // Helper function to perform a linear search of the underlying
+   // `data_` array, to find a matching key value. Used when a
+   // collision occurs. Returns -1 if there was no match.
+   int LinearSearch(const K& key, int start_index);
 
    // Resizes and rehashes the underlying array.
    void Rehash();
@@ -77,36 +93,20 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
       // TODO: Implement the rehash function.
       // Rehash();
       // Insert(key, value);
+      LOG("(Not implemented) At capacity. Rehashing.");
    } else {
-      // Perform a linear search for the next available slot.
-      for (int i = index + 1; i < data_.size(); i++) {
-         // Check to see whether the slot is empty.
-         std::unique_ptr<std::pair<K, V>>& pair = data_[i];
-         if (pair == nullptr) {
-            // Found an empty slot.
-            pair = std::make_unique<std::pair<K, V>>(key, value);
-            num_items_++;
-            return;
-         }
-      }
+      index = GetNextAvailIndex(/*start_index=*/index + 1);
 
-      // We've reached the end and not found an empty slot.
-      // Try searching from the front.
-      for (int i = 0; i < index; i++) {
-         // Check to see whether the slot is empty.
-         std::unique_ptr<std::pair<K, V>>& pair = data_[i];
-         if (pair == nullptr) {
-            // Found an empty slot.
-            pair = std::make_unique<std::pair<K, V>>(key, value);
-            num_items_++;
-            return;
-         }
+      if (index == -1) {
+         // This shouldn't be possible, since a rehash should occur
+         // before all slots are filled.
+         // Rehash();
+         // Insert(key, value);
+         LOG_ERR("Failed to insert. Hashmap is in invalid state.");
+         return;
       }
-
-      // This shouldn't be possible, since a rehash should occur
-      // before all slots are filled.
-      // Rehash();
-      // Insert(key, value);
+      data_[index] = std::make_unique<std::pair<K, V>>(key, value);
+      num_items_++;
    }
 }
 
@@ -117,8 +117,19 @@ void HashMap<K, V>::Remove(const K& key) {
 
    // TODO: Check for a collision in this, Get, and Contains
    if (pair != nullptr) {
-      pair = nullptr;
-      num_items_--;
+      // Check to make sure this isn't a collision.
+      if (pair->first == key) {
+         // No collision, safe to delete.
+         pair = nullptr;
+         num_items_--;
+      } else {
+         // We have a collision. Linearly search to find the slot.
+         index = LinearSearch(key, /*start_index=*/index + 1);
+         if (index != -1) {
+            data_[index] = nullptr;
+            num_items_--;
+         }
+      }
    }
 }
 
@@ -169,6 +180,60 @@ int HashMap<K, V>::GetIndex(const K& key) {
    msg = "Adjusted index=" + std::to_string(index);
    LOG(msg);
    return index;
+}
+
+template<typename K, typename V>
+int HashMap<K, V>::GetNextAvailIndex(int start_index) {
+   // Perform a linear search for the next available slot.
+   for (int i = start_index; i < data_.size(); i++) {
+      // Check to see whether the slot is empty.
+      std::unique_ptr<std::pair<K, V>>& pair = data_[i];
+      if (pair == nullptr) {
+         // Found an empty slot.
+         return i;
+      }
+   }
+
+   // Reached the end without finding an open slot. Start
+   // from the beginning and search.
+   for (int i = 0; i < start_index; i++) {
+      // Check to see whether the slot is empty.
+      std::unique_ptr<std::pair<K, V>>& pair = data_[i];
+      if (pair == nullptr) {
+         // Found an empty slot.
+         return i;
+      }
+   }
+
+   // No slots were found (this should never happen).
+   return -1;
+}
+
+template<typename K, typename V>
+int HashMap<K,V>::LinearSearch(const K& key, int start_index) {
+   // Perform a linear search to find a key match.
+   for (int i = start_index; i < data_.size(); i++) {
+      // Check to see whether the slot is a match.
+      std::unique_ptr<std::pair<K, V>>& pair = data_[i];
+      if (pair != nullptr && pair->first == key) {
+         // Found a match.
+         return i;
+      }
+   }
+
+   // Reached the end without finding an open slot. Start
+   // from the beginning and search.
+   for (int i = 0; i < start_index; i++) {
+      // Check to see whether the slot is a match.
+      std::unique_ptr<std::pair<K, V>>& pair = data_[i];
+      if (pair != nullptr && pair->first == key) {
+         // Found a match.
+         return i;
+      }
+   }
+
+   // No match was found.
+   return -1;
 }
 
 #endif  // HASHMAP_H
