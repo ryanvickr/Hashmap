@@ -1,3 +1,4 @@
+// Author: Ryan Vickramasinghe
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
@@ -96,6 +97,8 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
       // Insert(key, value);
       LOG("(Not implemented) At capacity. Rehashing.");
    } else {
+      // If we're below 70% capacity, we need to find the next
+      // available slot.
       index = GetNextAvailIndex(/*start_index=*/index + 1);
 
       if (index == -1) {

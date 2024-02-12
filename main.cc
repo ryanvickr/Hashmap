@@ -1,34 +1,39 @@
+// Author: Ryan Vickramasinghe
 #include <functional>
 #include <iostream>
 
 #include "src/hashmap.hpp"
 
-const int kTestKey = 11;
+const u_int32_t kNumItems = 10;
 
 int main() {
+    std::cout << "Testing <int, int> map." << std::endl;
     auto map = std::make_unique<HashMap<int, int>>(10);
-
-    // Try and insert a value.
-    map->Insert(kTestKey, 3);
-
-    // Try and get the same value.
-    auto* result = map->Get(kTestKey);
-    if (result == nullptr) {
-        std::cerr << "fail." << std::endl;
-        return 1;
-    } else {
-        std::cout << "Got value: " << *result << std::endl;
+    for (int i = 0; i < kNumItems; i++) {
+        map->Insert(i, i+1);
+    }
+    for (int i = 0; i < kNumItems; i++) {
+        auto* val = map->Get(i);
+        if (*val != (i+1)) {
+            std::cerr << "FAILURE" << std::endl;
+            return 1;
+        }
     }
 
-    // Try and remove a value.
-    map->Remove(kTestKey);
-    if (map->Contains(kTestKey)) {
-        std::cerr << "Failed to remove object." << std::endl;
-        return 1;
-    } else {
-        std::cout << "Removed object." << std::endl;
+    std::cout << "Testing <string, int> map." << std::endl;
+    auto map2 = std::make_unique<HashMap<std::string, int>>(10);
+    const std::vector<std::string> test_vals = 
+        {"Zuzu", "Ira", "Ryan", "Edie"};
+    for (int i = 0; i < test_vals.size(); i++) {
+        map2->Insert(test_vals[i], i);
+    }
+    for (int i = 0; i < test_vals.size(); i++) {
+        auto* val = map2->Get(test_vals[i]);
+        if (*val != i) {
+            std::cerr << "FAILURE" << std::endl;
+            return 1;
+        }
     }
 
-    std::cout << "Done!" << std::endl;
     return 0;
 }
