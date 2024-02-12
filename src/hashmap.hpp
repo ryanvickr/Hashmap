@@ -84,6 +84,7 @@ void HashMap<K, V>::Insert(const K& key, const V& value) {
    } else if (pair->first == key) {
       // No collision, replace the existing value.
       pair->second = value;
+      return;
    }
 
    // Deal with collisions.
