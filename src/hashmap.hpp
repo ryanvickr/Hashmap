@@ -146,9 +146,13 @@ V* HashMap<K, V>::Get(const K& key) {
    }
 
    if (pair->first != key) {
-      // We don't have a direct match, linear search.
-      LOG("Coudlnt' find match.");
-      return nullptr;
+      // We had a collision, search linearly to find a match.
+      index = LinearSearch(key, /*start_index=*/index + 1);
+      if (index == -1) {
+         LOG_ERR("Failed to get value, invalid index from collision.");
+         return nullptr;
+      }
+      return &(data_[index]->second);
    } else {
       return &pair->second;
    }
@@ -158,7 +162,17 @@ template<typename K, typename V>
 bool HashMap<K, V>::Contains(const K& key) {
    int index = GetIndex(key);
    std::unique_ptr<std::pair<K, V>>& pair = data_[index];
-   return pair != nullptr;
+
+   if (pair != nullptr) {
+      // Check for a collision.
+      if (pair->first != key) {
+         index = LinearSearch(key, /*start_index=*/index + 1);
+         return index != -1;
+      }
+      return true;
+   }
+
+   return false;
 }
 
 template<typename K, typename V>
