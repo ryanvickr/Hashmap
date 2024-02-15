@@ -26,8 +26,20 @@ class HashMap {
    // Copy constructor
    HashMap(HashMap& other);
    // Move constructors
-   // HashMap(HashMap&& other);
-   // HashMap& operator=(HashMap&& other);
+   HashMap(HashMap&& other);
+   HashMap& operator=(HashMap&& other) {
+      if (this != &other) {
+         data_.clear();
+         std::swap(data_, other.data_);
+         hash_function_ = other.hash_function_;
+         hasher_ = other.hasher_;
+         num_items_ = other.num_items_;
+
+         other.num_items_ = 0;
+      }
+
+      return *this;
+   }
 
    // Inserts a value into the hashmap.
    void Insert(const K& key, const V& value);
@@ -79,7 +91,8 @@ HashMap<K, V>::HashMap(int initial_size): data_(initial_size) {}
 
 template<typename K, typename V>
 HashMap<K, V>::HashMap(HashMap& other) {
-   data_.reserve(other.data_.size());
+      data_.reserve(other.data_.size());
+   // Unique pointer cannot be copied.
    for (int i = 0; i < other.data_.size(); i++) {
       std::unique_ptr<std::pair<K, V>>& val_to_copy = 
          other.data_[i];
@@ -91,6 +104,17 @@ HashMap<K, V>::HashMap(HashMap& other) {
    hash_function_ = other.hash_function_;
    hasher_ = other.hasher_;
    num_items_ = other.num_items_;
+}
+
+template<typename K, typename V>
+HashMap<K, V>::HashMap(HashMap&& other) {
+   data_.clear();
+   std::swap(data_, other.data_);
+   hash_function_ = other.hash_function_;
+   hasher_ = other.hasher_;
+   num_items_ = other.num_items_;
+
+   other.num_items_ = 0;
 }
 
 template<typename K, typename V>

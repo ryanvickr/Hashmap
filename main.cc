@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <utility>
+#include <assert.h>
 
 #include "src/hashmap.hpp"
 
@@ -14,7 +15,7 @@ int main() {
     for (int i = 0; i < kNumItems; i++) {
         map0.Insert(i, i+1);
     }
-    HashMap<int, int> map1(map0);
+    HashMap<int, int> map1(std::move(map0));
     for (int i = 0; i < kNumItems; i++) {
         auto* val = map1.Get(i);
         if (*val != (i+1)) {
@@ -22,6 +23,8 @@ int main() {
             return 1;
         }
     }
+
+    assert(map0.Size() == 0);
 
     // std::cout << "Testing <string, int> map." << std::endl;
     // auto map2 = std::make_unique<HashMap<std::string, int>>(10);
