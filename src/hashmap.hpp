@@ -24,21 +24,10 @@ class HashMap {
    HashMap(int initial_size, std::function<int(const K&)> hash_function);
 
    // Copy constructor
-   HashMap(HashMap& other) {
-      data_.reserve(other.data_.size());
-      for (int i = 0; i < other.data_.size(); i++) {
-         std::unique_ptr<std::pair<K, V>>& val_to_copy = 
-            other.data_[i];
-         if (val_to_copy != nullptr) {
-            data_[i] = std::make_unique<std::pair<K, V>>(
-               val_to_copy->first, val_to_copy->second);
-         }
-      }
-      hash_function_ = other.hash_function_;
-      hasher_ = other.hasher_;
-      num_items_ = other.num_items_;
-   }
-   // TODO: Add move constructors.
+   HashMap(HashMap& other);
+   // Move constructors
+   // HashMap(HashMap&& other);
+   // HashMap& operator=(HashMap&& other);
 
    // Inserts a value into the hashmap.
    void Insert(const K& key, const V& value);
@@ -87,6 +76,22 @@ HashMap<K, V>::HashMap(
 
 template<typename K, typename V>
 HashMap<K, V>::HashMap(int initial_size): data_(initial_size) {}
+
+template<typename K, typename V>
+HashMap<K, V>::HashMap(HashMap& other) {
+   data_.reserve(other.data_.size());
+   for (int i = 0; i < other.data_.size(); i++) {
+      std::unique_ptr<std::pair<K, V>>& val_to_copy = 
+         other.data_[i];
+      if (val_to_copy != nullptr) {
+         data_[i] = std::make_unique<std::pair<K, V>>(
+            val_to_copy->first, val_to_copy->second);
+      }
+   }
+   hash_function_ = other.hash_function_;
+   hasher_ = other.hasher_;
+   num_items_ = other.num_items_;
+}
 
 template<typename K, typename V>
 void HashMap<K, V>::Insert(const K& key, const V& value) {
